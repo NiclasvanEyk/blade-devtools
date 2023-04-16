@@ -1,0 +1,25 @@
+{
+  "name": "niclasvaneyk/blade-devtools",
+  "type": "library",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "NiclasvanEyk\\BladeDevtools\\": "src/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Niclas van Eyk",
+      "email": "niclas.eyk@gmail.com"
+    }
+  ],
+  "require": {
+    "illuminate/view": "^10.7",
+    "illuminate/contracts": "^10.7",
+    "ramsey/uuid": "^4.7",
+    "illuminate/support": "^10.7"
+  },
+  "require-dev": {
+    "laravel/pint": "^1.8"
+  }
+}

@@ -4,8 +4,10 @@ namespace NiclasvanEyk\BladeDevtools;
 
 use Illuminate\View\ViewServiceProvider;
 
-class CustomViewServiceProvider extends ViewServiceProvider
+class BladeDevtoolsServiceProvider extends ViewServiceProvider
 {
+    // TODO: Bail, if this package should not be enabled (e.g. if APP_ENV !== "local")
+
     /**
      * Create a new Factory Instance.
      *

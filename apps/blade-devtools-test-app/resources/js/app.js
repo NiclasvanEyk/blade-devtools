@@ -2,14 +2,13 @@ import "./bootstrap";
 
 import Alpine from "alpinejs";
 
-import { iterateComponentsTags } from "blade-devtools-ui";
+import { getAllComments } from "blade-devtools-ui";
 
 window.Alpine = Alpine;
 
 Alpine.start();
 
-document.addEventListener("load", function () {
-    const tree = iterateComponentsTags(document.documentElement);
-
+setTimeout(function () {
+    const tree = getAllComments(document.documentElement);
     console.log(tree);
-});
+}, 1000);

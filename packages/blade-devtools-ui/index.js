@@ -1,4 +1,4 @@
-export function* iterateComponentsTags(rootElem) {
+function* iterateComponentsTags(rootElem) {
   const iterator = document.createNodeIterator(
     rootElem,
     NodeFilter.SHOW_COMMENT,
@@ -73,7 +73,38 @@ function parseNode(content) {
   return { type, data };
 }
 
-function getAllComments(rootElem) {
+/**
+ * @param {string} name
+ */
+function displayLabel(name) {
+  const namespace = name.includes("::") ? name.split("::")[0] : null;
+  let view = name.includes("::") ? name.split("::")[1] : name;
+
+  if (view.startsWith("components.")) {
+    view = view.substring("components.".length);
+  }
+
+  if (namespace) {
+    return `<x-${namespace}::${view}>`;
+  }
+
+  return `<x-${view}>`;
+}
+
+function cleanData(data) {
+  const cleaned = structuredClone(data);
+
+  delete cleaned["__laravel_slots"];
+  delete cleaned["slot"];
+
+  if (Object.keys(cleaned["attributes"]).length === 0) {
+    delete cleaned["attributes"];
+  }
+
+  return cleaned;
+}
+
+export function getAllComments(rootElem) {
   let tree = {
     element: rootElem,
     parent: null,
@@ -84,14 +115,15 @@ function getAllComments(rootElem) {
   for (let componentTag of iterateComponentsTags(rootElem)) {
     if (componentTag.type === "START") {
       const component = {
-        label: componentTag.data.label,
+        label: displayLabel(componentTag.data.name),
         element: componentTag.element,
         // id: componentTag.id,
-        data: componentTag.data,
+        data: cleanData(componentTag.data.data),
         children: [],
         parent: current,
       };
       current.children.push(component);
+      console.log(component);
       current = component;
     }
 
@@ -102,7 +134,3 @@ function getAllComments(rootElem) {
 
   return tree;
 }
-
-window.addEventListener("load", function () {
-  console.log(getAllComments(document.documentElement));
-});

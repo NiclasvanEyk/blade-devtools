@@ -180,8 +180,8 @@ return [
         Illuminate\Session\SessionServiceProvider::class,
         Illuminate\Translation\TranslationServiceProvider::class,
         Illuminate\Validation\ValidationServiceProvider::class,
-        // Illuminate\View\ViewServiceProvider::class,
-        NiclasvanEyk\BladeDevtools\CustomViewServiceProvider::class,
+        Illuminate\View\ViewServiceProvider::class,
+        // NiclasvanEyk\BladeDevtools\CustomViewServiceProvider::class,
 
         /*
          * Package Service Providers...

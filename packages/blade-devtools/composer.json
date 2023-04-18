@@ -21,5 +21,12 @@
   },
   "require-dev": {
     "laravel/pint": "^1.8"
+  },
+  "extra": {
+    "laravel": {
+      "providers": [
+        "NiclasvanEyk\\BladeDevtools\\BladeDevtoolsServiceProvider"
+      ]
+    }
   }
 }

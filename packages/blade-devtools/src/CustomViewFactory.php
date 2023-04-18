@@ -22,20 +22,24 @@ class CustomViewFactory extends Factory
             $view = value($view, $data);
 
             $content = '';
+            $name = 'unknown';
             if ($view instanceof \Illuminate\View\View) {
                 $content .= $view->with($data)->render();
+                $name = $view->getName();
             } elseif ($view instanceof Htmlable) {
                 $content .= $view->toHtml();
+                $name = $data['label'] ?? $view::class;
             } else {
                 /** @var View */
                 $v = $this->make($view, $data);
                 $content .= $v->render();
+                $name = $v->getName();
             }
 
             // This is mostly the contribution by this library.
             // All code in here is copied from Laravel's source,
             // we only add markers to to track the rendering process.
-            return $this->withComponentMarkers($content, data: $data);
+            return $this->withComponentMarkers($content, data: $data, name: $name);
         } finally {
             $this->currentComponentData = $previousComponentData;
         }
@@ -43,11 +47,14 @@ class CustomViewFactory extends Factory
         return $content;
     }
 
-    private function withComponentMarkers(string $content, array $data): string
+    private function withComponentMarkers(string $content, array $data, string $name): string
     {
         $id = Uuid::uuid4();
 
-        $data = json_encode($data);
+        $data = json_encode([
+            'data' => $data,
+            'name' => $name,
+        ]);
 
         $w = "<!-- BLADE_COMPONENT_START[$id] -->";
         $w .= "<!-- BLADE_COMPONENT_DATA[$data] -->";

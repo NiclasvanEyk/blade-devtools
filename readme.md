@@ -1,6 +1,6 @@
 # Blade Devtools
 
-An attempt to build something like []() or []() for the Blade templating engine.
+An attempt to build something like [Vue's Devtools](https://devtools.vuejs.org/) or the [React Developer Tools](https://react.dev/learn/react-developer-tools) for the Blade templating engine.
 
 ## Installation
 

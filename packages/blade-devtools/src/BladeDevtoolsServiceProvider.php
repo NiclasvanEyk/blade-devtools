@@ -6,7 +6,19 @@ use Illuminate\View\ViewServiceProvider;
 
 class BladeDevtoolsServiceProvider extends ViewServiceProvider
 {
-    // TODO: Bail, if this package should not be enabled (e.g. if APP_ENV !== "local")
+    public function register()
+    {
+        parent::register();
+
+        $this->mergeConfigFrom(
+            __DIR__.'/../config/blade-devtools.php', 'blade-devtools'
+        );
+    }
+
+    public function boot(): void
+    {
+        $this->handlePublishing();
+    }
 
     /**
      * Create a new Factory Instance.
@@ -18,6 +30,22 @@ class BladeDevtoolsServiceProvider extends ViewServiceProvider
      */
     protected function createFactory($resolver, $finder, $events)
     {
+        $enabled = $this->app['config']->get('blade-devtools.enabled', false);
+        if (! $enabled) {
+            return parent::createFactory($resolver, $finder, $events);
+        }
+
         return new CustomViewFactory($resolver, $finder, $events);
+    }
+
+    private function handlePublishing(): void
+    {
+        if (! $this->app->runningInConsole()) {
+            return;
+        }
+
+        $this->publishes([
+            __DIR__.'/../config/blade-devtools.php' => config_path('blade-devtools.php'),
+        ], 'blade-devtools-config');
     }
 }

@@ -1,14 +1,12 @@
 <script setup lang="ts">
-import { ref, toRaw } from 'vue'
-import ComponentTreeNode from './components/ComponentTreeNode.vue'
-import type { BladeComponentViewTreeNode } from './lib/tree-view'
+import { ref } from 'vue'
+import ComponentTreeNode from '@/components/ComponentTreeNode.vue'
+import type { BladeComponentViewTreeNode } from '@/lib/tree-view'
+import { getAllComments } from '@/lib/blade'
 
-const [root, globalComponentList] = (window as any).__BLADE_DEVTOOLS_ROOT__ as [
-  BladeComponentViewTreeNode,
-  BladeComponentViewTreeNode[]
-]
+defineProps<{ open: boolean }>()
 
-root.expanded = true
+const [root] = getAllComments()
 
 const selectedComponent = ref<null | BladeComponentViewTreeNode>(null)
 function selectPreviousSibling() {
@@ -27,13 +25,14 @@ function selectNextSibling() {
 </script>
 
 <template>
-  <div class="blade-devtools">
+  <div class="blade-devtools" v-bind:class="{ open }">
     <h3 class="headline">Blade Devtools</h3>
 
     <div class="main-detail">
       <div class="main">
         <ComponentTreeNode
           :component="root"
+          :level="0"
           :selected-component="selectedComponent"
           @select="selectedComponent = $event"
           @select-previous-sibling="selectPreviousSibling()"
@@ -41,41 +40,24 @@ function selectNextSibling() {
         />
       </div>
       <div class="detail">
-        {{ selectedComponent?.label }}
-        selected: {{ selectedComponent?.id }}
-        <pre>{{ JSON.stringify(selectedComponent?.data, null, 4) }}</pre>
+        <pre>{{ JSON.stringify(selectedComponent?.data, null, 2) }}</pre>
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.headline {
-  font-size: 2rem;
-}
-
-.main-detail {
-  display: flex;
-  flex-direction: row;
-}
-
-.main,
-.detail {
-  max-height: 100vh;
-  max-width: 100%;
-  overflow: auto;
-  padding: 2rem;
-  white-space: pre;
-}
-
-.main {
-  border-right: 1px solid black;
+.blade-devtools.open {
+  transform: translateY(0);
 }
 
 .blade-devtools {
   position: fixed;
-  top: 0;
+  bottom: 0;
   inset-inline: 0;
+  height: 33vh;
+  transform: translateY(100%);
+  transition: transform 0.25s ease-in-out;
   background: white;
   color: black;
   z-index: 999999999;
@@ -91,5 +73,29 @@ function selectNextSibling() {
   --red-800: #991b1b;
   --red-900: #7f1d1d;
   --red-950: #450a0a;
+}
+.headline {
+  font-size: 2rem;
+}
+
+.main-detail {
+  display: flex;
+  flex-direction: row;
+}
+
+.main,
+.detail {
+  max-height: 100vh;
+  max-width: 100%;
+  overflow: auto;
+  white-space: pre;
+}
+
+.main {
+  border-right: 1px solid black;
+}
+
+.detail {
+  padding: 0 1rem 1rem;
 }
 </style>

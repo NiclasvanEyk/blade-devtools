@@ -17,7 +17,8 @@
     "illuminate/view": "^10.7",
     "illuminate/contracts": "^10.7",
     "ramsey/uuid": "^4.7",
-    "illuminate/support": "^10.7"
+    "illuminate/support": "^10.7",
+    "symfony/var-exporter": "^6.2"
   },
   "require-dev": {
     "laravel/pint": "^1.8"

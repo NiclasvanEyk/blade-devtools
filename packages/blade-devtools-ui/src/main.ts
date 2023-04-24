@@ -1,7 +1,6 @@
 import { createApp } from 'vue'
-import App from './App.vue'
+import BladeDevtools from './BladeDevtools.vue'
 
-import './assets/main.css'
 export { getAllComments } from './lib/blade'
 
 export function mountDevtools() {
@@ -9,8 +8,7 @@ export function mountDevtools() {
   target.id = 'blade-devtools'
   document.body.appendChild(target)
 
-  console.log('mounting blade devtools to', target)
-
-  const app = createApp(App)
+  const app = createApp(BladeDevtools)
   app.mount(target)
+  console.log('Mounted devtools', target)
 }

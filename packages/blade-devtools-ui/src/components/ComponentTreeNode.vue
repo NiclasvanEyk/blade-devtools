@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import type { BladeComponentViewTreeNode } from '@/lib/tree-view'
 import { computed, ref, watch } from 'vue'
+import DynamicBadge from '@/components/DynamicBadge.vue'
 
 const emit = defineEmits<{
   (e: 'select', component: BladeComponentViewTreeNode): void
@@ -11,6 +12,7 @@ const emit = defineEmits<{
 const props = defineProps<{
   component: BladeComponentViewTreeNode
   selectedComponent: BladeComponentViewTreeNode | null
+  level: number
 }>()
 const hasChildren = computed(() => props.component.children.length > 0)
 
@@ -84,12 +86,14 @@ function selectPreviousSibling() {
     <div
       v-if="props.component.parent !== null"
       class="tag"
+      :style="{ paddingLeft: `${level * 10}px` }"
       @click="emit('select', props.component)"
     >
       <button
         v-bind:class="{ invisible: !hasChildren }"
         @click="expanded = !expanded"
         class="expanded-indicator"
+        tabindex="-1"
       >
         <span v-if="!expanded">▶</span>
         <span v-if="expanded">▼</span>
@@ -97,17 +101,19 @@ function selectPreviousSibling() {
 
       <span v-if="hasChildren">&lt;{{ component.label }}&gt;</span>
       <span v-else>&lt;{{ component.label }} /&gt;</span>
+      <DynamicBadge style="margin-left: 4px; display: block" v-if="component.dynamic" />
     </div>
 
     <ul v-if="hasChildren && expanded" class="children">
       <ComponentTreeNode
         @select="emit('select', $event)"
-        @select-previous-sibling="selectPreviousSibling(true)"
+        @select-previous-sibling="emit('select', props.component)"
         @select-next-sibling="selectNextSibling(true)"
         v-for="child in component.children"
         v-bind:key="child.id"
         :component="child"
         :selected-component="selectedComponent"
+        :level="props.level + 1"
       />
     </ul>
   </li>
@@ -119,12 +125,20 @@ function selectPreviousSibling() {
   list-style-type: none;
 }
 
+.tag {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding-right: 1rem;
+}
+
 .tag:hover {
   background-color: var(--red-300);
 }
 
 .selected > .tag {
-  background-color: var(--red-500);
+  background-color: var(--red-700);
+  color: var(--red-50);
 }
 
 .expanded-indicator {
@@ -132,7 +146,7 @@ function selectPreviousSibling() {
 }
 
 .children {
-  margin-left: 10px;
+  margin-left: 0;
 }
 
 .invisible {

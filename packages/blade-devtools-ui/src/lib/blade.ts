@@ -151,9 +151,20 @@ export interface BladeComponentTreeNode {
    * All child components rendered by this one.
    */
   children: BladeComponentTreeNode[]
+
+  /**
+   * Whether the component was rendered through `x-dynamic-component`.
+   */
+  dynamic: boolean
 }
 
-export function getAllComments(rootElem: Node): [BladeComponentTreeNode, BladeComponentTreeNode[]] {
+export function isDynamicComponent(node: BladeComponentTreeNode): boolean {
+  return node.label === 'x-dynamic-component'
+}
+
+export function getAllComments(
+  rootElem: Node | null = null
+): [BladeComponentTreeNode, BladeComponentTreeNode[]] {
   rootElem ??= document.documentElement
 
   const tree: BladeComponentTreeNode = {
@@ -163,7 +174,9 @@ export function getAllComments(rootElem: Node): [BladeComponentTreeNode, BladeCo
     children: []
   }
   let current = tree
+  let currentIsDynamic = false
   const list = [tree]
+  const skippedIds = new Set<string>()
 
   for (const componentTag of iterateComponentsTags(rootElem)) {
     if (componentTag.type === 'START') {
@@ -173,14 +186,22 @@ export function getAllComments(rootElem: Node): [BladeComponentTreeNode, BladeCo
         id: componentTag.id,
         data: cleanData(componentTag.data.data),
         children: [],
-        parent: current
+        parent: current,
+        dynamic: currentIsDynamic
       }
-      current.children.push(component)
-      current = component
-      list.push(component)
+
+      if (!isDynamicComponent(component)) {
+        current.children.push(component)
+        current = component
+        list.push(component)
+        currentIsDynamic = false
+      } else {
+        skippedIds.add(component.id)
+        currentIsDynamic = true
+      }
     }
 
-    if (componentTag.type === 'END') {
+    if (componentTag.type === 'END' && !skippedIds.has(componentTag.id!)) {
       current = current.parent
     }
   }

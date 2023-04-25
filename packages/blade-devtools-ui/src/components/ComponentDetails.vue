@@ -46,5 +46,7 @@ const render = (properties) =>
   <!-- <h3>Other Properties</h3> -->
   <!-- <pre>{{ render(categorizedProps.other) }}</pre> -->
 
+  <pre>{{ selectedComponent?.data_serialized }}</pre>
+
   <div v-html="selectedComponent?.data_dumped"></div>
 </template>

@@ -3,7 +3,6 @@
 namespace NiclasvanEyk\BladeDevtools;
 
 use Symfony\Component\VarDumper\Cloner\Cursor;
-use Symfony\Component\VarDumper\Cloner\Stub;
 use Symfony\Component\VarDumper\Dumper\AbstractDumper;
 
 class JsonDumper extends AbstractDumper
@@ -268,22 +267,27 @@ class JsonDumper extends AbstractDumper
 
         $class = $this->utf8Encode($class);
         if (Cursor::HASH_OBJECT === $type) {
-            $prefix = $class && 'stdClass' !== $class ? $this->style('note', $class, $attr).(empty($attr['cut_hash']) ? ' {' : '') : '{';
+            $prefix = $class && 'stdClass' !== $class
+                ? $class
+                : '{';
         } elseif (Cursor::HASH_RESOURCE === $type) {
-            $prefix = $this->style('note', $class.' resource', $attr).($hasChild ? ' {' : ' ');
+            $prefix = $class.' resource'.($hasChild ? ' {' : ' ');
         } else {
-            $prefix = $class && ! (self::DUMP_LIGHT_ARRAY & $this->flags) ? $this->style('note', 'array:'.$class).' [' : '[';
+            $prefix = '[';
         }
 
         if (($cursor->softRefCount || 0 < $cursor->softRefHandle) && empty($attr['cut_hash'])) {
-            $prefix .= $this->style('ref', (Cursor::HASH_RESOURCE === $type ? '@' : '#').(0 < $cursor->softRefHandle ? $cursor->softRefHandle : $cursor->softRefTo), ['count' => $cursor->softRefCount]);
+            // $foo = (Cursor::HASH_RESOURCE === $type ? '@' : '#');
+            // $bar = (0 < $cursor->softRefHandle ? $cursor->softRefHandle : $cursor->softRefTo);
+
+            // $prefix .= $foo;
         } elseif ($cursor->hardRefTo && ! $cursor->refIndex && $class) {
             $prefix .= $this->style('ref', '&'.$cursor->hardRefTo, ['count' => $cursor->hardRefCount]);
         } elseif (! $hasChild && Cursor::HASH_RESOURCE === $type) {
             $prefix = substr($prefix, 0, -1);
         }
 
-        $this->line .= $prefix;
+        $this->line .= '{"type": "'.$class.'", "value": ';
 
         if ($hasChild) {
             $this->dumpLine($cursor->depth);
@@ -294,7 +298,7 @@ class JsonDumper extends AbstractDumper
     {
         if (empty($cursor->attr['cut_hash'])) {
             $this->dumpEllipsis($cursor, $hasChild, $cut);
-            $this->line .= Cursor::HASH_OBJECT === $type ? '}' : (Cursor::HASH_RESOURCE !== $type ? ']' : ($hasChild ? '}' : ''));
+            $this->line .= Cursor::HASH_OBJECT === $type ? '}' : (Cursor::HASH_RESOURCE !== $type ? '}' : ($hasChild ? '}' : ''));
         }
 
         $this->endValue($cursor);
@@ -341,11 +345,6 @@ class JsonDumper extends AbstractDumper
                     // no break
                 case Cursor::HASH_ASSOC:
                     $this->line .= "\"$key\": ";
-                    // if (\is_int($key)) {
-                    //     $this->line .= $this->style($style, $key).': ';
-                    // } else {
-                    //     $this->line .= $bin.'"'.$this->style($style, $key).'" => ';
-                    // }
                     break;
 
                 case Cursor::HASH_RESOURCE:
@@ -353,7 +352,7 @@ class JsonDumper extends AbstractDumper
                     // no break
                 case Cursor::HASH_OBJECT:
                     if (! isset($key[0]) || "\0" !== $key[0]) {
-                        $this->line .= '+'.$bin.$this->style('public', $key).': ';
+                        $this->line .= "+\"$key\": ";
                     } elseif (0 < strpos($key, "\0", 1)) {
                         $key = explode("\0", substr($key, 1), 2);
 
@@ -380,17 +379,12 @@ class JsonDumper extends AbstractDumper
                                 break;
                         }
 
-                        if (isset($attr['collapse'])) {
-                            if ($attr['collapse']) {
-                                $this->collapseNextHash = true;
-                            } else {
-                                $this->expandNextHash = true;
-                            }
-                        }
+                        $this->line .= '{"type": "'.$style.'", "name": "'.$key[1].'", "value": ';
 
-                        $this->line .= $bin.$this->style($style, $key[1], $attr).($attr['separator'] ?? ': ');
+                        // $this->line .= $bin.$key[1].': ';
                     } else {
                         // This case should not happen
+                        throw new \Exception('This case should not happen');
                         $this->line .= '-'.$bin.'"'.$this->style('private', $key, ['class' => '']).'": ';
                     }
                     break;
@@ -402,13 +396,6 @@ class JsonDumper extends AbstractDumper
         }
     }
 
-    /**
-     * Decorates a value with some style.
-     *
-     * @param  string  $style The type of style being applied
-     * @param  string  $value The value being styled
-     * @param  array  $attr  Optional context information
-     */
     protected function style(string $style, string $value, array $attr = []): string
     {
         return $value;
@@ -425,14 +412,7 @@ class JsonDumper extends AbstractDumper
             return;
         }
 
-        if (Stub::ARRAY_INDEXED === $cursor->hashType || Stub::ARRAY_ASSOC === $cursor->hashType) {
-            if (self::DUMP_TRAILING_COMMA & $this->flags && 0 < $cursor->depth) {
-                $this->line .= ',';
-            } elseif (self::DUMP_COMMA_SEPARATOR & $this->flags && 1 < $cursor->hashLength - $cursor->hashIndex) {
-                $this->line .= ',';
-            }
-        }
-
+        $this->line .= ',';
         $this->dumpLine($cursor->depth, true);
     }
 

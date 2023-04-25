@@ -138,6 +138,7 @@ export interface BladeComponentTreeNode {
   data: BladeComponentAttributes
 
   data_dumped: any
+  data_serialized: string
 
   /**
    * The closest DOM node rendered by the component.
@@ -189,6 +190,7 @@ export function getAllComments(
         id: componentTag.id,
         data: cleanData(componentTag.data.data),
         data_dumped: componentTag.data.data_dumped,
+        data_serialized: componentTag.data.data_serialized,
         children: [],
         parent: current,
         dynamic: currentIsDynamic

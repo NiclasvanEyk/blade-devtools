@@ -60,7 +60,7 @@ class CustomViewFactory extends Factory
         // }
 
         if (array_key_exists('attributes', $data)) {
-            $data = $data['attributes'];
+            $data = $data['attributes']->getAttributes();
         }
         unset($data['__laravel_slots']);
         unset($data['slot']);
@@ -68,11 +68,11 @@ class CustomViewFactory extends Factory
         $cloned = (new VarCloner())->cloneVar($data);
         $dumper = new HtmlDumper();
         $dumper->setTheme('light');
-        // $dumper = new JsonDumper();
 
         $data = json_encode([
             'data' => $data,
             'data_dumped' => $dumper->dump($cloned, output: true),
+            'data_serialized' => (new Serializer)->serialize($data),
             'name' => $name,
         ]);
 

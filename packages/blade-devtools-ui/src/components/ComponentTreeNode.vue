@@ -130,6 +130,8 @@ function selectPreviousSibling() {
   flex-direction: row;
   align-items: center;
   padding-right: 1rem;
+  user-select: none;
+  border-radius: 4px;
 }
 
 .tag:hover {

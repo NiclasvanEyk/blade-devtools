@@ -1,10 +1,18 @@
 <script setup lang="ts">
-defineProps<{ modelValue: boolean }>()
-defineEmits<{ (e: 'update:modelValue', boolean) }>()
+const props = defineProps<{ modelValue: boolean }>()
+const emit = defineEmits<{ (e: 'update:modelValue', payload: boolean) }>()
+
+const toggle = () => emit('update:modelValue', !props.modelValue)
 </script>
 
 <template>
-  <label class="container" for="blade-devtools-toggle" tabindex="1">
+  <label
+    class="container"
+    for="blade-devtools-toggle"
+    tabindex="1"
+    @keydown.self.enter.prevent="toggle()"
+    @keydown.self.space.prevent="toggle()"
+  >
     B
 
     <input

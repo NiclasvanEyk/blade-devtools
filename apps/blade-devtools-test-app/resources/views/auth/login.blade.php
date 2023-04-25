@@ -39,7 +39,7 @@
                 </a>
             @endif
 
-            <x-primary-button class="ml-3" :foo="'bar'">
+            <x-primary-button class="ml-3" :foo="'bar'" :user="App\Models\User::first()">
                 {{ __('Log in') }}
             </x-primary-button>
         </div>

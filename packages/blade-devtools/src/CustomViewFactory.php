@@ -6,6 +6,7 @@ use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\View\Factory;
 use Illuminate\View\View;
 use Ramsey\Uuid\Uuid;
+use Symfony\Component\HttpFoundation\Session\Attribute\AttributeBag;
 use Symfony\Component\VarDumper\Cloner\VarCloner;
 use Symfony\Component\VarDumper\Dumper\HtmlDumper;
 
@@ -49,15 +50,29 @@ class CustomViewFactory extends Factory
         return $content;
     }
 
-    private function withComponentMarkers(string $content, array $data, string $name) : string
+    private function withComponentMarkers(string $content, array $data, string $name): string
     {
         $id = Uuid::uuid4();
 
-        // $cloned = (new VarCloner())->cloneVar($data);
-        // $dumper = new HtmlDumper();
+        // No need to dump values twice
+        // if ($data['attributes'] instanceof AttributeBag) {
+        //     $data = $data['attributes'];
+        // }
+
+        if (array_key_exists('attributes', $data)) {
+            $data = $data['attributes'];
+        }
+        unset($data['__laravel_slots']);
+        unset($data['slot']);
+
+        $cloned = (new VarCloner())->cloneVar($data);
+        $dumper = new HtmlDumper();
+        $dumper->setTheme('light');
+        // $dumper = new JsonDumper();
+
         $data = json_encode([
             'data' => $data,
-            // 'data_dumped' => $dumper->dump($cloned, output: true),
+            'data_dumped' => $dumper->dump($cloned, output: true),
             'name' => $name,
         ]);
 

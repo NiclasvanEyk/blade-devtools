@@ -104,12 +104,12 @@ function displayLabel(name: string, attributes: BladeComponentAttributes): strin
 function cleanData(data) {
   const cleaned = structuredClone(data)
 
-  delete cleaned['__laravel_slots']
-  delete cleaned['slot']
-
-  if (Object.keys(cleaned['attributes']).length === 0) {
-    delete cleaned['attributes']
-  }
+  // delete cleaned['__laravel_slots']
+  // delete cleaned['slot']
+  //
+  // if (Object.keys(cleaned['attributes']).length === 0) {
+  //   delete cleaned['attributes']
+  // }
 
   return cleaned
 }
@@ -136,6 +136,8 @@ export interface BladeComponentTreeNode {
    * Data passed and available to the component.
    */
   data: BladeComponentAttributes
+
+  data_dumped: any
 
   /**
    * The closest DOM node rendered by the component.
@@ -180,11 +182,13 @@ export function getAllComments(
 
   for (const componentTag of iterateComponentsTags(rootElem)) {
     if (componentTag.type === 'START') {
+      console.log(componentTag)
       const component = {
         label: displayLabel(componentTag.data.name, componentTag.data.data),
         element: componentTag.element,
         id: componentTag.id,
         data: cleanData(componentTag.data.data),
+        data_dumped: componentTag.data.data_dumped,
         children: [],
         parent: current,
         dynamic: currentIsDynamic

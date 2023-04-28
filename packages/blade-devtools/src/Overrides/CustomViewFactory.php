@@ -74,8 +74,6 @@ class CustomViewFactory extends Factory
 
     private function withComponentMarkers(string $content, array $data, string $name): string
     {
-        $id = Uuid::uuid4();
-
         // No need to dump values twice
         // if ($data['attributes'] instanceof AttributeBag) {
         //     $data = $data['attributes'];
@@ -99,10 +97,9 @@ class CustomViewFactory extends Factory
 
         $this->devtools()->renderingContext()->closeCurrentComponentContext();
         
-        $w = "<!-- BLADE_COMPONENT_START[$id] -->";
-        $w .= "<!-- BLADE_COMPONENT_DATA[$data] -->";
+        $w = "<!-- BLADE_COMPONENT_START[$context->id] -->";
         $w .= $content;
-        $w .= "<!-- BLADE_COMPONENT_END[$id] -->";
+        $w .= "<!-- BLADE_COMPONENT_END[$context->id] -->";
 
         if ($context->parent === null) {
             $state = json_encode($this->devtools()->renderingContext()->serialize());

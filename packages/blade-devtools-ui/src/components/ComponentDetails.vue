@@ -1,42 +1,26 @@
 <script setup lang="ts">
 import type { BladeComponentViewTreeNode } from '@/lib/tree-view'
-import { computed, watch } from 'vue'
+import {computed, toRaw, watch} from 'vue'
 
 const props = defineProps<{
   selectedComponent: BladeComponentViewTreeNode | null
 }>()
 
-const categorizedProps = computed(() => {
-  const { selectedComponent } = props
-  const categorizedProps = { dom: {}, other: {} }
+const render = function (properties) {
+    console.log(properties);
 
-  if (!selectedComponent) return categorizedProps
+    return JSON.stringify(properties, null, 2)
+        .split('\n')
+        .map((line) => line.substring(2))
+        .slice(1, -1)
+        .join('\n')
+}
 
-  const { element, data } = selectedComponent
-  if (!(element instanceof HTMLElement)) return categorizedProps
+const data = computed(() => {
+    if (!props.selectedComponent) return {};
 
-  Object.entries(data).forEach(([name, value]) => {
-    const attribute = element.attributes.getNamedItem(name)
-    if (name == 'class' || (attribute && attribute.value == value)) {
-      categorizedProps.dom[name] = value
-    } else if (element[name] && element[name] == value) {
-      categorizedProps.dom[name] = value
-    } else {
-      categorizedProps.other[name] = value
-    }
-  })
-
-  return categorizedProps
+    return window.__BDT_CONTEXT[props.selectedComponent.id];
 })
-
-watch(categorizedProps, console.log)
-
-const render = (properties) =>
-  JSON.stringify(properties, null, 2)
-    .split('\n')
-    .map((line) => line.substring(2))
-    .slice(1, -1)
-    .join('\n')
 </script>
 
 <template>
@@ -46,7 +30,5 @@ const render = (properties) =>
   <!-- <h3>Other Properties</h3> -->
   <!-- <pre>{{ render(categorizedProps.other) }}</pre> -->
 
-  <pre>{{ selectedComponent?.data_serialized }}</pre>
-
-  <div v-html="selectedComponent?.data_dumped"></div>
+  <pre>{{ render(data) }}</pre>
 </template>

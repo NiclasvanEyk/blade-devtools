@@ -2,6 +2,7 @@
 
 namespace NiclasvanEyk\BladeDevtools\Context;
 
+use NiclasvanEyk\BladeDevtools\ComponentDataSerializer;
 use function json_encode;
 
 /**
@@ -56,7 +57,7 @@ class RenderingContext
         foreach ($this->components as $context) {
             $components[$context->id] = [
                 'id' => $context->id,
-                'data' => $context->data,
+                'data' => (new ComponentDataSerializer())->serialize($context->data),
                 'tag' => $context->tag,
                 'view' => $context->view,
             ];

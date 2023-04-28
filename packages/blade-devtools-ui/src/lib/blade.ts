@@ -1,5 +1,5 @@
 interface BladeNode {
-  type: 'START' | 'END' | 'DATA'
+  type: 'START' | 'END'
   id: string
   label: string
   data: unknown
@@ -26,18 +26,9 @@ function* iterateComponentsTags(rootElem: Node) {
 
     if (type === 'START') {
       startedNode = { type, id: data, parent: currentNode.parentNode }
-      continue
-    }
-
-    if (type === 'DATA') {
-      if (!startedNode) {
-        throw new Error('No current node!')
-      }
-      startedNode.data = JSON.parse(data)
       startedNode.element = nextHtmlTagSibling(currentNode)
 
       yield startedNode
-
       continue
     }
 
@@ -101,19 +92,6 @@ function displayLabel(name: string, attributes: BladeComponentAttributes): strin
   return `x-${view}`
 }
 
-function cleanData(data) {
-  const cleaned = structuredClone(data)
-
-  // delete cleaned['__laravel_slots']
-  // delete cleaned['slot']
-  //
-  // if (Object.keys(cleaned['attributes']).length === 0) {
-  //   delete cleaned['attributes']
-  // }
-
-  return cleaned
-}
-
 export type BladeComponentAttributes = { [key: string]: unknown }
 
 export interface BladeComponentTreeNode {
@@ -131,14 +109,6 @@ export interface BladeComponentTreeNode {
    * A label representing the component tag.
    */
   label: string
-
-  /**
-   * Data passed and available to the component.
-   */
-  data: BladeComponentAttributes
-
-  data_dumped: any
-  data_serialized: string
 
   /**
    * The closest DOM node rendered by the component.
@@ -173,7 +143,6 @@ export function getAllComments(
   const tree: BladeComponentTreeNode = {
     element: rootElem,
     parent: null,
-    data: {},
     children: []
   }
   let current = tree
@@ -183,14 +152,12 @@ export function getAllComments(
 
   for (const componentTag of iterateComponentsTags(rootElem)) {
     if (componentTag.type === 'START') {
-      console.log(componentTag)
+      const label = window.__BDT_CONTEXT[componentTag.id].tag
+
       const component = {
-        label: displayLabel(componentTag.data.name, componentTag.data.data),
+        label,
         element: componentTag.element,
         id: componentTag.id,
-        data: cleanData(componentTag.data.data),
-        data_dumped: componentTag.data.data_dumped,
-        data_serialized: componentTag.data.data_serialized,
         children: [],
         parent: current,
         dynamic: currentIsDynamic

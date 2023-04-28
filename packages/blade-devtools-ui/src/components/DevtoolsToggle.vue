@@ -8,6 +8,7 @@ const toggle = () => emit('update:modelValue', !props.modelValue)
 <template>
   <label
     class="container"
+    v-bind:class="{ open: modelValue }"
     for="blade-devtools-toggle"
     tabindex="1"
     @keydown.self.enter.prevent="toggle()"
@@ -35,6 +36,8 @@ const toggle = () => emit('update:modelValue', !props.modelValue)
   top: 0;
   right: 0;
 
+  border: 1px solid transparent;
+
   user-select: none;
 
   display: flex;
@@ -44,7 +47,12 @@ const toggle = () => emit('update:modelValue', !props.modelValue)
 
 .container:focus-within,
 .container:focus {
-  border: 1px solid black;
+  border-color: black;
+}
+
+.open {
+  color: var(--red-800);
+  text-shadow: 0px 0px 2px var(--red-300), 0px 0px 4px var(--red-600);
 }
 
 .toggle {

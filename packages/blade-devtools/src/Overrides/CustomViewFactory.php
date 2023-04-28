@@ -1,17 +1,39 @@
 <?php
 
-namespace NiclasvanEyk\BladeDevtools;
+namespace NiclasvanEyk\BladeDevtools\Overrides;
 
 use Illuminate\Contracts\Support\Htmlable;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\Factory;
 use Illuminate\View\View;
+use NiclasvanEyk\BladeDevtools\Adapter\ViewFactoryDevtools;
+use NiclasvanEyk\BladeDevtools\ComponentDataSerializer;
 use Ramsey\Uuid\Uuid;
-use Symfony\Component\HttpFoundation\Session\Attribute\AttributeBag;
-use Symfony\Component\VarDumper\Cloner\VarCloner;
-use Symfony\Component\VarDumper\Dumper\HtmlDumper;
+use function json_encode;
 
 class CustomViewFactory extends Factory
 {
+    private ?ViewFactoryDevtools $devtools = null;
+
+    public function devtools(): ViewFactoryDevtools
+    {
+        $devtools = $this->devtools;
+
+        if (!$devtools) {
+            $devtools = new ViewFactoryDevtools();
+            $this->devtools = $devtools;
+        }
+
+        return $devtools;
+    }
+
+    public function flushState()
+    {
+        parent::flushState();
+
+        $this->devtools()->flushState();
+    }
+
     public function renderComponent()
     {
         $view = array_pop($this->componentStack);
@@ -65,21 +87,27 @@ class CustomViewFactory extends Factory
         unset($data['__laravel_slots']);
         unset($data['slot']);
 
-        $cloned = (new VarCloner())->cloneVar($data);
-        $dumper = new HtmlDumper();
-        $dumper->setTheme('light');
-
         $data = json_encode([
             'data' => $data,
-            'data_dumped' => $dumper->dump($cloned, output: true),
-            'data_serialized' => (new Serializer)->serialize($data),
+            'data_dumped' => '',
+            'data_serialized' => (new ComponentDataSerializer)->serialize($data),
             'name' => $name,
         ]);
 
+        $context =  $this->devtools()->renderingContext()->currentComponentContext();
+        $context->view = $name;
+
+        $this->devtools()->renderingContext()->closeCurrentComponentContext();
+        
         $w = "<!-- BLADE_COMPONENT_START[$id] -->";
         $w .= "<!-- BLADE_COMPONENT_DATA[$data] -->";
         $w .= $content;
         $w .= "<!-- BLADE_COMPONENT_END[$id] -->";
+
+        if ($context->parent === null) {
+            $state = json_encode($this->devtools()->renderingContext()->serialize());
+            $w.= "<script>window.__BDT_CONTEXT = JSON.parse($state);</script>";
+        }
 
         return $w;
     }

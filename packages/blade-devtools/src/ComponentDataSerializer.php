@@ -2,7 +2,7 @@
 
 namespace NiclasvanEyk\BladeDevtools;
 
-class Serializer
+class ComponentDataSerializer
 {
     private $depth = 0;
 
@@ -36,7 +36,6 @@ class Serializer
 
     private function serializeArray(array $attributes): array
     {
-
         $serialized = [];
 
         foreach ($attributes as $name => $value) {
@@ -87,14 +86,13 @@ class Serializer
                 continue;
             }
             try {
-            $properties[] = [
+            $properties[$property->getName()] = [
                 'name' => $property->getName(),
                 'value' => $this->serialize($property->getValue($object)),
             ];
             } catch (\Throwable $exception) {
 
             }
-
         }
         $serialized['properties'] = $properties;
 

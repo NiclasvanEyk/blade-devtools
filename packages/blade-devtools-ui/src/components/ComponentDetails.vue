@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { BladeComponentViewTreeNode } from '@/lib/tree-view'
-import {computed, toRaw, watch} from 'vue'
+import {computed} from 'vue'
+import Value from "@/components/data-types/Value.vue";
+import Array from "@/components/data-types/Array.vue";
 
 const props = defineProps<{
   selectedComponent: BladeComponentViewTreeNode | null
@@ -24,11 +26,16 @@ const data = computed(() => {
 </script>
 
 <template>
+  <!-- Button for opening the view in your editor  -->
+  <!-- Button for opening the compiled view in your editor  -->
+  <!-- Button for opening the class in your editor  -->
+  <!-- Button for revealing the component in the elements tab  -->
+
   <!-- <h3>DOM Properties</h3> -->
   <!-- <pre>{{ render(categorizedProps.dom) }}</pre> -->
   <!---->
   <!-- <h3>Other Properties</h3> -->
   <!-- <pre>{{ render(categorizedProps.other) }}</pre> -->
-
-  <pre>{{ render(data) }}</pre>
+  <h3>Attributes</h3>
+  <Array v-if="data.data" :initial="true" :attribute="data.data" />
 </template>

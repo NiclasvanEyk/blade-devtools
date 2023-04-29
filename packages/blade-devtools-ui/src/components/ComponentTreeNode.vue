@@ -2,6 +2,7 @@
 import type { BladeComponentViewTreeNode } from '@/lib/tree-view'
 import { computed, ref, watch } from 'vue'
 import DynamicBadge from '@/components/DynamicBadge.vue'
+import ExpandedIndicator from "@/components/ExpandedIndicator.vue";
 
 const emit = defineEmits<{
   (e: 'select', component: BladeComponentViewTreeNode): void
@@ -22,7 +23,6 @@ watch(isSelected, (wasSelected) => {
   if (!domNode.value) return
 
   if (wasSelected) {
-    console.log(`Selected ${props.component.label}`)
     domNode.value.focus()
   } else domNode.value.blur()
 })
@@ -35,8 +35,6 @@ function selectNextSibling(fromChildren = false) {
   if (!parent) return
 
   if (!fromChildren && expanded.value && props.component.children.length > 0) {
-    console.log(fromChildren)
-    console.log(`${props.component.label} decided to select its first children!`)
     emit('select', props.component.children[0])
     return
   }
@@ -45,10 +43,8 @@ function selectNextSibling(fromChildren = false) {
   const nextIndex = siblings.indexOf(props.component) + 1
 
   if (nextIndex < siblings.length) {
-    console.log(`${props.component.label} decided to select ${siblings[nextIndex].label}!`)
     emit('select', siblings[nextIndex])
   } else {
-    console.log(`${props.component.label} delegated the selection upwards`)
     emit('select-next-sibling')
   }
 }
@@ -61,10 +57,8 @@ function selectPreviousSibling() {
   const previousIndex = siblings.indexOf(props.component) - 1
 
   if (previousIndex >= 0) {
-    console.log(`${props.component.label} decided to select ${siblings[previousIndex].label}!`)
     emit('select', siblings[previousIndex])
   } else {
-    console.log(`${props.component.label} delegated the selection upwards`)
     emit('select-previous-sibling')
   }
 }
@@ -95,8 +89,7 @@ function selectPreviousSibling() {
         class="expanded-indicator"
         tabindex="-1"
       >
-        <span v-if="!expanded">▶</span>
-        <span v-if="expanded">▼</span>
+          <ExpandedIndicator :expanded="expanded" />
       </button>
 
       <span v-if="hasChildren">&lt;{{ component.label }}&gt;</span>
@@ -119,7 +112,7 @@ function selectPreviousSibling() {
   </li>
 </template>
 
-<style>
+<style scoped>
 .node {
   font-family: monospace;
   list-style-type: none;

@@ -131,6 +131,32 @@ export interface BladeComponentTreeNode {
   dynamic: boolean
 }
 
+export type ClassComponentAttribute = {
+  type: 'class',
+  className: string
+  properties: {
+    [name: string]: {
+      name: string;
+      value: ComponentAttribute
+    }
+  }
+ }
+
+export type ArrayComponentAttribute =
+  | { type: 'array', list: boolean, value: ComponentAttributes }
+
+export type ComponentAttribute =
+  | { type: 'string', value: string }
+  | { type: 'int', value: number }
+  | { type: 'float', value: number }
+  | { type: 'bool', value: boolean }
+  | ArrayComponentAttribute
+  | ClassComponentAttribute
+
+export type ComponentAttributes = {
+  [k: string]: ComponentAttribute
+}
+
 export function isDynamicComponent(node: BladeComponentTreeNode): boolean {
   return node.label === 'x-dynamic-component'
 }

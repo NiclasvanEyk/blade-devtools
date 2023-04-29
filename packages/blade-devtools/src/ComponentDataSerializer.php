@@ -2,6 +2,9 @@
 
 namespace NiclasvanEyk\BladeDevtools;
 
+use function array_is_list;
+use function is_int;
+
 class ComponentDataSerializer
 {
     private $depth = 0;
@@ -42,7 +45,11 @@ class ComponentDataSerializer
             $serialized[$name] = $this->serialize($value);
         }
 
-        return $serialized;
+        return [
+            'type' => 'array',
+            'list' => array_is_list($attributes),
+            'value' => $serialized,
+        ];
     }
 
     private function serializeScalar($scalar): string

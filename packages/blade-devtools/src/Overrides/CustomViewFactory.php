@@ -6,10 +6,8 @@ use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\Factory;
 use Illuminate\View\View;
+use NiclasvanEyk\BladeDevtools\Adapter\BrowserDevtools;
 use NiclasvanEyk\BladeDevtools\Adapter\ViewFactoryDevtools;
-use NiclasvanEyk\BladeDevtools\ComponentDataSerializer;
-use Ramsey\Uuid\Uuid;
-use function json_encode;
 
 class CustomViewFactory extends Factory
 {
@@ -19,7 +17,7 @@ class CustomViewFactory extends Factory
     {
         $devtools = $this->devtools;
 
-        if (!$devtools) {
+        if (! $devtools) {
             $devtools = new ViewFactoryDevtools();
             $this->devtools = $devtools;
         }
@@ -85,25 +83,21 @@ class CustomViewFactory extends Factory
         unset($data['__laravel_slots']);
         unset($data['slot']);
 
-        $data = json_encode([
-            'data' => $data,
-            'data_dumped' => '',
-            'data_serialized' => (new ComponentDataSerializer)->serialize($data),
-            'name' => $name,
-        ]);
-
-        $context =  $this->devtools()->renderingContext()->currentComponentContext();
+        $context = $this->devtools()->renderingContext()->currentComponentContext();
         $context->view = $name;
 
         $this->devtools()->renderingContext()->closeCurrentComponentContext();
-        
+
         $w = "<!-- BLADE_COMPONENT_START[$context->id] -->";
         $w .= $content;
         $w .= "<!-- BLADE_COMPONENT_END[$context->id] -->";
 
         if ($context->parent === null) {
-            $state = json_encode($this->devtools()->renderingContext()->serialize());
-            $w.= "<script>window.__BDT_CONTEXT = JSON.parse($state);</script>";
+            Log::info('[BDT] Done! rendering state...');
+            $w .= (new BrowserDevtools())->toScript($this->devtools()->renderingContext());
+        } else {
+            $parent = $context->parent;
+            Log::info('Not done yet!', ['parent' => ['id' => $parent->id, 'tag' => $parent->tag, 'view' => $parent->view]]);
         }
 
         return $w;

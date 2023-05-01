@@ -1,27 +1,19 @@
 <script setup lang="ts">
 import type { BladeComponentViewTreeNode } from '@/lib/tree-view'
-import {computed} from 'vue'
-import Value from "@/components/data-types/Value.vue";
-import Array from "@/components/data-types/Array.vue";
+import { computed } from 'vue'
+import Array from '@/components/data-types/Array.vue'
 
 const props = defineProps<{
   selectedComponent: BladeComponentViewTreeNode | null
 }>()
 
-const render = function (properties) {
-    console.log(properties);
-
-    return JSON.stringify(properties, null, 2)
-        .split('\n')
-        .map((line) => line.substring(2))
-        .slice(1, -1)
-        .join('\n')
-}
-
 const data = computed(() => {
-    if (!props.selectedComponent) return {};
+  if (!props.selectedComponent) return {}
 
-    return window.__BDT_CONTEXT[props.selectedComponent.id];
+  const ret = window.__BDT_CONTEXT[props.selectedComponent.id];
+    console.log(ret);
+
+    return ret;
 })
 </script>
 

@@ -3,12 +3,17 @@ import type { BladeComponentViewTreeNode } from '@/lib/tree-view'
 import { computed, ref, watch } from 'vue'
 import DynamicBadge from '@/components/DynamicBadge.vue'
 import ExpandedIndicator from "@/components/ExpandedIndicator.vue";
+import {
+    injectBladeComponentHighlighter
+} from "@/lib/injectBladeComponentHighlighter";
 
 const emit = defineEmits<{
   (e: 'select', component: BladeComponentViewTreeNode): void
   (e: 'select-next-sibling'): void
   (e: 'select-previous-sibling'): void
 }>()
+
+const highlighter = injectBladeComponentHighlighter()
 
 const props = defineProps<{
   component: BladeComponentViewTreeNode
@@ -62,6 +67,13 @@ function selectPreviousSibling() {
     emit('select-previous-sibling')
   }
 }
+
+function scrollIntoView() {
+    const firstElement = props.component.nodes.find((e): e is HTMLElement => e instanceof HTMLElement)
+    if (!firstElement) return
+
+    firstElement.scrollIntoView({ behavior: 'smooth' })
+}
 </script>
 
 <template>
@@ -75,10 +87,13 @@ function selectPreviousSibling() {
     @keydown.right.prevent.self="expanded = true"
     @keydown.up.prevent.self="selectPreviousSibling()"
     @keydown.down.prevent.self="selectNextSibling()"
+    @dblclick="scrollIntoView()"
     tabindex="1"
   >
     <div
       v-if="props.component.parent !== null"
+      @mouseenter="highlighter.highlight(component.nodes)"
+      @mouseleave="highlighter.clear()"
       class="tag"
       :style="{ paddingLeft: `${level * 10}px` }"
       @click="emit('select', props.component)"

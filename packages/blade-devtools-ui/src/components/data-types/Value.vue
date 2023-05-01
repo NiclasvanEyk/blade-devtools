@@ -5,6 +5,7 @@ import String from "@/components/data-types/String.vue";
 import Number from "@/components/data-types/Number.vue";
 import type {ComponentAttribute} from "@/lib/blade";
 import Boolean from "@/components/data-types/Boolean.vue";
+import Null from "@/components/data-types/Null.vue";
 
 defineProps<{ attribute: ComponentAttribute }>();
 </script>
@@ -14,6 +15,8 @@ defineProps<{ attribute: ComponentAttribute }>();
     <Number v-else-if="attribute.type === 'int' " :value="attribute.value" />
     <Number v-else-if="attribute.type === 'float'" :value="attribute.value" />
     <Boolean v-else-if="attribute.type === 'bool'" :value="attribute.value" />
+    <Null v-else-if="attribute.type === 'null'" />
+
     <Array v-else-if="attribute.type === 'array'" :attribute="attribute" />
     <Class v-else-if="attribute.type === 'class'" :class-name="attribute.class" :properties="attribute.properties" />
 </template>

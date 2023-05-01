@@ -1,24 +1,29 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import {onMounted, ref} from 'vue'
 import ComponentTree from '@/components/ComponentTree.vue'
 import ComponentDetails from '@/components/ComponentDetails.vue'
 import type { BladeComponentViewTreeNode } from '@/lib/tree-view'
-import { getAllComments } from '@/lib/blade'
+import { parseComponentTree } from '@/lib/blade'
+import {
+    provideBladeComponentHighlighter
+} from "@/lib/injectBladeComponentHighlighter";
 
 defineProps<{ open: boolean }>()
 
-const [root] = getAllComments()
+const componentTree = parseComponentTree()
+
+provideBladeComponentHighlighter()
 
 const selectedComponent = ref<null | BladeComponentViewTreeNode>(null)
 </script>
 
 <template>
-  <div class="blade-devtools" v-bind:class="{ open }">
+  <div class="devtools" v-bind:class="{ open }">
     <div class="main-detail">
       <div class="main">
         <ComponentTree
           @selected="selectedComponent = $event"
-          :root="root"
+          :root="componentTree"
           :selected-component="selectedComponent"
         />
       </div>
@@ -30,11 +35,11 @@ const selectedComponent = ref<null | BladeComponentViewTreeNode>(null)
 </template>
 
 <style scoped>
-.blade-devtools.open {
+.devtools.open {
   transform: translateY(0);
 }
 
-.blade-devtools {
+.devtools {
   position: fixed;
   bottom: 0;
   inset-inline: 0;

@@ -4,10 +4,27 @@ interface BladeNode {
   label: string
   data: unknown
   element: Node | null
+  startNode: Node
+  endNode: Node
   parent: Node | null
 }
 
-function* iterateComponentsTags(rootElem: Node) {
+interface ComponentStartTag {
+  type: 'START'
+  id: string
+  node: Node
+  parent: Node
+}
+
+interface ComponentEndTag {
+  type: 'END'
+  id: string
+  node: Node
+}
+
+type ComponentTag = ComponentStartTag | ComponentEndTag
+
+function* iterateComponentsTags(rootElem: Node): Generator<ComponentTag> {
   const iterator = document.createNodeIterator(
     rootElem,
     NodeFilter.SHOW_COMMENT,
@@ -15,7 +32,6 @@ function* iterateComponentsTags(rootElem: Node) {
   )
 
   let currentNode: Node | null
-  let startedNode: Partial<BladeNode> | null = null
   while ((currentNode = iterator.nextNode())) {
     const content = currentNode.nodeValue?.trim() ?? ''
     if (!content.startsWith('BLADE_COMPONENT_')) {
@@ -25,31 +41,16 @@ function* iterateComponentsTags(rootElem: Node) {
     const { type, data } = parseNode(content)
 
     if (type === 'START') {
-      startedNode = { type, id: data, parent: currentNode.parentNode }
-      startedNode.element = nextHtmlTagSibling(currentNode)
-
-      yield startedNode
+      yield { type, id: data, node: currentNode, parent: currentNode.parentNode! }
       continue
     }
 
     if (type === 'END') {
-      startedNode = null
-
-      yield { type, id: data }
+      yield { type, id: data, node: currentNode }
     }
   }
 
   return
-}
-
-function nextHtmlTagSibling(node: Node): Node | null {
-  let next = node.nextSibling
-
-  while (next && ['#comment', '#text'].includes(next.nodeName)) {
-    next = next.nextSibling
-  }
-
-  return next
 }
 
 function parseNode(content: string) {
@@ -62,36 +63,6 @@ function parseNode(content: string) {
   return { type, data }
 }
 
-/**
- * @param {string} name
- */
-function displayLabel(name: string, attributes: BladeComponentAttributes): string {
-  const namespace = name.includes('::') ? name.split('::')[0] : null
-  if (namespace === '__components') {
-    const dynamicView = attributes.componentName
-    const name = attributes.component
-    if (typeof dynamicView === 'string') {
-      if (dynamicView === 'dynamic-component' && typeof name === 'string') {
-        return displayLabel(attributes.componentName, attributes)
-      } else {
-        return displayLabel(dynamicView, attributes)
-      }
-    }
-  }
-
-  let view = name.includes('::') ? name.split('::')[1] : name
-
-  if (view.startsWith('components.')) {
-    view = view.substring('components.'.length)
-  }
-
-  if (namespace) {
-    return `x-${namespace}::${view}`
-  }
-
-  return `x-${view}`
-}
-
 export type BladeComponentAttributes = { [key: string]: unknown }
 
 export interface BladeComponentTreeNode {
@@ -101,19 +72,14 @@ export interface BladeComponentTreeNode {
   id: string
 
   /**
-   * Of all
-   */
-  globalIndex: number
-
-  /**
    * A label representing the component tag.
    */
   label: string
 
   /**
-   * The closest DOM node rendered by the component.
+   * All DOM nodes rendered by the component.
    */
-  element: Node
+  nodes: Node[]
 
   /**
    * The parent component.
@@ -127,6 +93,8 @@ export interface BladeComponentTreeNode {
 
   /**
    * Whether the component was rendered through `x-dynamic-component`.
+   *
+   * @deprecated
    */
   dynamic: boolean
 }
@@ -150,6 +118,7 @@ export type ComponentAttribute =
   | { type: 'int', value: number }
   | { type: 'float', value: number }
   | { type: 'bool', value: boolean }
+  | { type: 'null', value: null }
   | ArrayComponentAttribute
   | ClassComponentAttribute
 
@@ -157,53 +126,47 @@ export type ComponentAttributes = {
   [k: string]: ComponentAttribute
 }
 
-export function isDynamicComponent(node: BladeComponentTreeNode): boolean {
-  return node.label === 'x-dynamic-component'
-}
-
-export function getAllComments(
+export function parseComponentTree(
   rootElem: Node | null = null
-): [BladeComponentTreeNode, BladeComponentTreeNode[]] {
+): BladeComponentTreeNode {
   rootElem ??= document.documentElement
 
+  // @ts-ignore
   const tree: BladeComponentTreeNode = {
-    element: rootElem,
     parent: null,
     children: []
   }
   let current = tree
-  let currentIsDynamic = false
-  const list = [tree]
-  const skippedIds = new Set<string>()
 
-  for (const componentTag of iterateComponentsTags(rootElem)) {
-    if (componentTag.type === 'START') {
-      const label = window.__BDT_CONTEXT[componentTag.id].tag
-
-      const component = {
-        label,
-        element: componentTag.element,
-        id: componentTag.id,
+  for (const tag of iterateComponentsTags(rootElem)) {
+    if (tag.type === 'START') {
+      const component: BladeComponentTreeNode = {
+        label: window.__BDT_CONTEXT[tag.id].tag,
+        nodes: [tag.node],
+        id: tag.id,
         children: [],
         parent: current,
-        dynamic: currentIsDynamic
+        dynamic: false
       }
 
-      if (!isDynamicComponent(component)) {
         current.children.push(component)
         current = component
-        list.push(component)
-        currentIsDynamic = false
-      } else {
-        skippedIds.add(component.id)
-        currentIsDynamic = true
-      }
     }
 
-    if (componentTag.type === 'END' && !skippedIds.has(componentTag.id!)) {
+    if (tag.type === 'END') {
+      let sibling: Node|null = current.nodes[0]
+
+      do {
+        sibling = sibling.nextSibling
+        if (!sibling) break
+
+        current.nodes.push(sibling)
+      } while (sibling !== tag.node)
+
+      // @ts-ignore
       current = current.parent
     }
   }
 
-  return [tree, list]
+  return tree
 }

@@ -30,9 +30,10 @@ const toggle = () => emit('update:modelValue', !props.modelValue)
 <style scoped>
 .container {
   font-size: 3rem;
-  padding: 0rem 1rem;
+  padding: 0 1rem;
+  width: fit-content;
 
-  position: absolute;
+  position: fixed;
   top: 0;
   right: 0;
 

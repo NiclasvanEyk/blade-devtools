@@ -8,14 +8,16 @@ const open = ref(false)
 </script>
 
 <template>
-  <div class="blade-devtools">
-    <Devtools :open="open" />
-    <DevtoolsToggle v-model="open" />
+  <div class="blade-devtools-container">
+      <div class="blade-devtools" id="blade-devtools">
+          <Devtools :open="open" />
+          <DevtoolsToggle v-model="open" />
+      </div>
   </div>
 </template>
 
 <style scoped>
-.blade-devtools {
+.blade-devtools-container {
   --red-50: #fef2f2;
   --red-100: #fee2e2;
   --red-200: #fecaca;
@@ -29,5 +31,16 @@ const open = ref(false)
   --red-950: #450a0a;
 
   --border-color: rgba(0, 0, 0, 0.15);
+
+  /* This enables us to position everything relative to the top left of the screen */
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 0;
+  width: 0;
+}
+
+.blade-devtools {
+    position: relative;
 }
 </style>

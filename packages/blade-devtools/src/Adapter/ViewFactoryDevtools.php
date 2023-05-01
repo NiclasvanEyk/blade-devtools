@@ -2,6 +2,7 @@
 
 namespace NiclasvanEyk\BladeDevtools\Adapter;
 
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\Component;
 use NiclasvanEyk\BladeDevtools\Context\RenderingContext;
@@ -30,13 +31,12 @@ class ViewFactoryDevtools
     {
         $context = $this->renderingContext()->createComponentContext();
         $context->tag = $component->componentName;
-        $context->data = $component->data();
+        $context->data = Arr::except($component->data(), 'attributes');
         $context->class = $component::class;
     }
 
     public function flushState(): void
     {
-
         $this->renderingContext = null;
     }
 }

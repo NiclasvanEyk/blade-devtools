@@ -18,6 +18,7 @@ class ComponentContext
         public string $tag = "unknown",
         public string $view = "unknown",
         public string $class = "unknown",
+        public string $file = "unknown",
     ) {
         $this->id = $id ?? (string) Uuid::uuid4();
     }

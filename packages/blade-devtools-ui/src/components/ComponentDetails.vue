@@ -10,7 +10,7 @@ const props = defineProps<{
 const data = computed(() => {
   if (!props.selectedComponent) return {}
 
-  const ret = window.__BDT_CONTEXT[props.selectedComponent.id];
+  const ret = window.__BLADE_DEVTOOLS_COMPONENT_DATA[props.selectedComponent.id];
     console.log(ret);
 
     return ret;
@@ -28,6 +28,12 @@ const data = computed(() => {
   <!---->
   <!-- <h3>Other Properties</h3> -->
   <!-- <pre>{{ render(categorizedProps.other) }}</pre> -->
-  <h3>Attributes</h3>
+  <h3 class="heading">Attributes</h3>
   <Array v-if="data.data" :initial="true" :attribute="data.data" />
 </template>
+
+<style scoped>
+.heading {
+    line-height: 1rem;
+}
+</style>

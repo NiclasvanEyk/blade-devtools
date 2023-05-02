@@ -11,7 +11,7 @@ use function json_encode;
 class RenderingContext
 {
     /**
-     * @var <string,ComponentContext>
+     * @var array<string,ComponentContext>
      */
     public array $components = [];
 
@@ -60,9 +60,19 @@ class RenderingContext
                 'data' => (new ComponentDataSerializer())->serialize($context->data),
                 'tag' => $context->tag,
                 'view' => $context->view,
+                'file' => $context->file,
             ];
         }
 
         return json_encode($components);
+    }
+
+    public function serializeToScriptTag(): string
+    {
+        return '<script id="blade-devtools-component-data">'
+            . 'window.__BLADE_DEVTOOLS_COMPONENT_DATA = JSON.parse('
+                . json_encode($this->serialize())
+            . ');'
+            . '</script>';
     }
 }

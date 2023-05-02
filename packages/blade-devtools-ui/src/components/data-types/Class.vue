@@ -27,7 +27,7 @@ const expanded = ref(true)
 
 <style scoped>
 .class-name {
-    color: darkviolet;
+    color: var(--text-color-class);
     font-style: italic;
 }
 

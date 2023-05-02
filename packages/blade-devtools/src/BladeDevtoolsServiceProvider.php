@@ -2,7 +2,11 @@
 
 namespace NiclasvanEyk\BladeDevtools;
 
+use Illuminate\Contracts\Http\Kernel as KernelInterface;
+use Illuminate\Foundation\Http\Kernel;
 use Illuminate\View\ViewServiceProvider;
+use NiclasvanEyk\BladeDevtools\Context\RenderingContextManager;
+use NiclasvanEyk\BladeDevtools\Http\Middleware\InjectBladeDevtoolsRenderingData;
 use NiclasvanEyk\BladeDevtools\Overrides\CustomBladeCompiler;
 use NiclasvanEyk\BladeDevtools\Overrides\CustomViewFactory;
 
@@ -21,12 +25,22 @@ class BladeDevtoolsServiceProvider extends ViewServiceProvider
             return;
         }
 
+        $this->app->singleton(RenderingContextManager::class);
         $this->registerCustomBladeCompiler();
     }
 
     public function boot(): void
     {
         $this->handlePublishing();
+
+        if (!$this->isEnabled()) {
+            return;
+        }
+
+        /** @var Kernel $httpKernel */
+        $httpKernel = $this->app[KernelInterface::class];
+
+        $httpKernel->pushMiddleware(InjectBladeDevtoolsRenderingData::class);
     }
 
     /**

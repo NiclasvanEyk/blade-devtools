@@ -3,9 +3,7 @@ import type { BladeComponentViewTreeNode } from '@/lib/tree-view'
 import { computed, ref, watch } from 'vue'
 import DynamicBadge from '@/components/DynamicBadge.vue'
 import ExpandedIndicator from "@/components/ExpandedIndicator.vue";
-import {
-    injectBladeComponentHighlighter
-} from "@/lib/injectBladeComponentHighlighter";
+import {injectComponentHighlighting} from "@/lib/highlight-dom-element";
 
 const emit = defineEmits<{
   (e: 'select', component: BladeComponentViewTreeNode): void
@@ -13,7 +11,7 @@ const emit = defineEmits<{
   (e: 'select-previous-sibling'): void
 }>()
 
-const highlighter = injectBladeComponentHighlighter()
+const highlighter = injectComponentHighlighting()
 
 const props = defineProps<{
   component: BladeComponentViewTreeNode
@@ -69,25 +67,25 @@ function selectPreviousSibling() {
 }
 
 function scrollIntoView() {
-    const firstElement = props.component.nodes.find((e): e is HTMLElement => e instanceof HTMLElement)
+    const firstElement = props.component.nodes.find((e) => typeof e.scrollIntoView === 'function')
+    console.log(props.component.nodes, firstElement)
     if (!firstElement) return
 
-    firstElement.scrollIntoView({ behavior: 'smooth' })
+    firstElement.scrollIntoView({ block: 'start' })
+    setTimeout(() => {
+        highlighter.highlight(props.component.nodes)
+    }, 50)
 }
 </script>
 
 <template>
-  <li
-    ref="domNode"
-    class="node"
-    :class="{ selected: isSelected }"
-    @keydown.enter.prevent.self="expanded = !expanded"
+  <li ref="domNode" class="node" :class="{ selected: isSelected }" @keydown.enter.prevent.self="expanded = !expanded"
     @keydown.space.prevent.self="expanded = !expanded"
     @keydown.left.prevent.self="expanded = false"
     @keydown.right.prevent.self="expanded = true"
     @keydown.up.prevent.self="selectPreviousSibling()"
     @keydown.down.prevent.self="selectNextSibling()"
-    @dblclick="scrollIntoView()"
+    @dblclick.stop="scrollIntoView()"
     tabindex="1"
   >
     <div
@@ -143,12 +141,12 @@ function scrollIntoView() {
 }
 
 .tag:hover {
-  background-color: var(--red-300);
+  background-color: var(--primary-300);
 }
 
 .selected > .tag {
-  background-color: var(--red-700);
-  color: var(--red-50);
+  background-color: var(--primary-700);
+  color: var(--primary-50);
 }
 
 .expanded-indicator {

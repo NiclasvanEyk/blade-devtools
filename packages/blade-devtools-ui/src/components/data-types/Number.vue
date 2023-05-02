@@ -8,6 +8,6 @@ defineProps<{ value: number }>()
 
 <style scoped>
 .value {
-    color: blue;
+    color: var(--text-color-number);
 }
 </style>

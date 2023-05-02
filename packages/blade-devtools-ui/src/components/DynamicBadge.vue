@@ -11,7 +11,7 @@ const props = defineProps<{ class?: string }>()
   border-radius: 100px;
   padding: 1px 5px;
   font-size: 0.75em;
-  background-color: var(--red-200);
-  color: var(--red-900);
+  background-color: var(--primary-200);
+  color: var(--primary-900);
 }
 </style>

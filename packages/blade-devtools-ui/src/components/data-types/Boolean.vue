@@ -8,6 +8,6 @@ defineProps<{ value: boolean }>()
 
 <style scoped>
 .value {
-    color: red;
+    color: var(--text-color-boolean);
 }
 </style>

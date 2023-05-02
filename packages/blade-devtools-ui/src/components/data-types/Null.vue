@@ -4,6 +4,6 @@
 
 <style scoped>
 .value {
-    color: royalblue;
+    color: var(--text-color-null);
 }
 </style>

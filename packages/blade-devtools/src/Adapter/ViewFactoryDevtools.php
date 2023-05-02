@@ -3,9 +3,9 @@
 namespace NiclasvanEyk\BladeDevtools\Adapter;
 
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Log;
 use Illuminate\View\Component;
 use NiclasvanEyk\BladeDevtools\Context\RenderingContext;
+use NiclasvanEyk\BladeDevtools\Context\RenderingContextManager;
 
 /**
  * The "public interface" to the `__$env` variable / ViewFactory inside
@@ -13,18 +13,12 @@ use NiclasvanEyk\BladeDevtools\Context\RenderingContext;
  */
 class ViewFactoryDevtools
 {
-    private ?RenderingContext $renderingContext = null;
-
     public function renderingContext(): RenderingContext
     {
-        $context = $this->renderingContext;
+        /** @var RenderingContextManager $manager */
+        $manager = resolve(RenderingContextManager::class);
 
-        if (!$context) {
-            $context = new RenderingContext();
-            $this->renderingContext = $context;
-        }
-
-        return $context;
+        return $manager->currentOrNew();
     }
 
     public function setCurrentComponent(Component $component): void
@@ -37,6 +31,6 @@ class ViewFactoryDevtools
 
     public function flushState(): void
     {
-        $this->renderingContext = null;
+        // TODO
     }
 }

@@ -6,19 +6,21 @@ use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Support\Facades\Log;
 use Illuminate\View\Factory;
 use Illuminate\View\View;
-use NiclasvanEyk\BladeDevtools\Adapter\BrowserDevtools;
+use Illuminate\Contracts\View\View as ViewContract;
 use NiclasvanEyk\BladeDevtools\Adapter\ViewFactoryDevtools;
 
 class CustomViewFactory extends Factory
 {
     private ?ViewFactoryDevtools $devtools = null;
 
+    private ?ViewContract $currentlyRenderedRootView = null;
+
     public function devtools(): ViewFactoryDevtools
     {
         $devtools = $this->devtools;
 
         if (! $devtools) {
-            $devtools = new ViewFactoryDevtools();
+            $devtools = resolve(ViewFactoryDevtools::class);
             $this->devtools = $devtools;
         }
 
@@ -29,7 +31,21 @@ class CustomViewFactory extends Factory
     {
         parent::flushState();
 
+        $this->currentlyRenderedRootView = null;
+
+        Log::info("Now we are really done!");
+
         $this->devtools()->flushState();
+    }
+
+    // Overriden to know which view originally triggered the rendering process
+    public function callComposer(ViewContract $view)
+    {
+        parent::callComposer($view);
+
+        if (!$this->currentlyRenderedRootView) {
+            $this->currentlyRenderedRootView = $view;
+        }
     }
 
     public function renderComponent()
@@ -48,6 +64,8 @@ class CustomViewFactory extends Factory
             $name = 'unknown';
             if ($view instanceof \Illuminate\View\View) {
                 $content .= $view->with($data)->render();
+                $context = $this->devtools()->renderingContext()->currentComponentContext();
+                $context->file = $view->getPath();
                 $name = $view->getName();
             } elseif ($view instanceof Htmlable) {
                 $content .= $view->toHtml();
@@ -55,13 +73,15 @@ class CustomViewFactory extends Factory
             } else {
                 /** @var View */
                 $v = $this->make($view, $data);
+                $context = $this->devtools()->renderingContext()->currentComponentContext();
+                $context->file = $v->getPath();
                 $content .= $v->render();
                 $name = $v->getName();
             }
 
             // This is mostly the contribution by this library.
             // All code in here is copied from Laravel's source,
-            // we only add markers to to track the rendering process.
+            // we only add markers to track the rendering process.
             return $this->withComponentMarkers($content, data: $data, name: $name);
         } finally {
             $this->currentComponentData = $previousComponentData;
@@ -73,32 +93,23 @@ class CustomViewFactory extends Factory
     private function withComponentMarkers(string $content, array $data, string $name): string
     {
         // No need to dump values twice
-        // if ($data['attributes'] instanceof AttributeBag) {
-        //     $data = $data['attributes'];
-        // }
-
         if (array_key_exists('attributes', $data)) {
             $data = $data['attributes']->getAttributes();
         }
+
+        // We also don't really care about these two
         unset($data['__laravel_slots']);
         unset($data['slot']);
 
-        $context = $this->devtools()->renderingContext()->currentComponentContext();
-        $context->view = $name;
+        $context = $this->devtools->renderingContext();
+        $component = $context->currentComponentContext();
+        $component->view = $name;
 
-        $this->devtools()->renderingContext()->closeCurrentComponentContext();
-
-        $w = "<!-- BLADE_COMPONENT_START[$context->id] -->";
+        $w = "<!-- BLADE_COMPONENT_START[$component->id] -->";
         $w .= $content;
-        $w .= "<!-- BLADE_COMPONENT_END[$context->id] -->";
+        $w .= "<!-- BLADE_COMPONENT_END[$component->id] -->";
 
-        if ($context->parent === null) {
-            Log::info('[BDT] Done! rendering state...');
-            $w .= (new BrowserDevtools())->toScript($this->devtools()->renderingContext());
-        } else {
-            $parent = $context->parent;
-            Log::info('Not done yet!', ['parent' => ['id' => $parent->id, 'tag' => $parent->tag, 'view' => $parent->view]]);
-        }
+        $context->closeCurrentComponentContext();
 
         return $w;
     }

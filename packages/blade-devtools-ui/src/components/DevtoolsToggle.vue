@@ -52,8 +52,8 @@ const toggle = () => emit('update:modelValue', !props.modelValue)
 }
 
 .open {
-  color: var(--red-800);
-  text-shadow: 0px 0px 2px var(--red-300), 0px 0px 4px var(--red-600);
+  color: var(--primary-800);
+  text-shadow: 0px 0px 2px var(--primary-300), 0px 0px 4px var(--primary-600);
 }
 
 .toggle {

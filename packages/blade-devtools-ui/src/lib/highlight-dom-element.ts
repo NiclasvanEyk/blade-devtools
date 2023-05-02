@@ -1,4 +1,6 @@
-interface Overlay {
+import {inject, type InjectionKey, provide, type Ref} from "vue";
+
+export interface Overlay {
     position: {
         x: number
         y: number
@@ -15,53 +17,50 @@ interface Overlay {
     }
 }
 
-type OverlayElement = HTMLDivElement
-
-/**
- * Highlights the DOM nodes rendered by a Blade component.
- */
-export class BladeComponentHighlighter {
-    #current: null | { overlay: Overlay, element: OverlayElement } = null
-
-    private get root(): HTMLElement {
-        return document.getElementById('blade-devtools')!
-    }
-
+interface ComponentHighlighting {
     /**
      * Highlights the given nodes.
      *
      * It does this, by appending a new element to the dom, which is positioned
      * over those nodes and spans their bounding box.
      */
-    public highlight(nodes: Node[]|undefined): void {
-        this.clear()
-        if (!nodes) {
-            return
-        }
-
-        const overlay = computeOverlay(nodes);
-        if (!overlay) {
-            return
-        }
-
-        this.setOverlay(overlay)
-    }
-
-    public setOverlay(overlay: Overlay) {
-        const element = createOverlayElement(overlay);
-        this.root.appendChild(element)
-        this.#current = { overlay, element }
-    }
+    highlight(nodes: Node[] | undefined): void;
 
     /**
      * Removes the current highlight if one exists.
      */
-    public clear(): void {
-        if (!this.#current) return
+    clear(): void;
+}
 
-        this.root.removeChild(this.#current.element)
-        this.#current = null
-    }
+const INJECTION_KEY = Symbol('blade-devtools-component-highlighting') as InjectionKey<ComponentHighlighting>
+
+export function provideComponentHighlighting(ref: Ref<Overlay|null>): void {
+    provide(INJECTION_KEY, {
+        highlight(nodes: Node[] | undefined): void {
+            this.clear()
+            if (!nodes) {
+                return
+            }
+
+            const overlay = computeOverlay(nodes);
+            if (!overlay) {
+                return
+            }
+
+            ref.value = overlay
+        },
+
+        clear(): void {
+            ref.value = null
+        },
+    })
+}
+
+export function injectComponentHighlighting(): ComponentHighlighting {
+    return inject(INJECTION_KEY, {
+        highlight() {},
+        clear() {},
+    })
 }
 
 interface Bounds {
@@ -129,40 +128,5 @@ export function toOverlay(bounds: Bounds): Overlay|null {
             y: bounds.top
         },
         dimensions: {height, width},
-    }
-}
-
-function createOverlayElement(overlay: Overlay): OverlayElement {
-    const element = document.createElement('div')
-
-    style(element, {
-        zIndex: '999999998',
-        position: 'fixed',
-        width: `${overlay.dimensions.width}px`,
-        height: `${overlay.dimensions.height}px`,
-        left: `${overlay.position.x}px`,
-        top: `${overlay.position.y}px`,
-        background: 'var(--red-500)',
-        opacity: '0.3',
-
-        fontFamily: 'monospace',
-        pointerEvents: 'none',
-    })
-
-    if (overlay.borderRadius) {
-        style(element, {
-            borderTopLeftRadius: overlay.borderRadius.topLeft,
-            borderTopRightRadius: overlay.borderRadius.topRight,
-            borderBottomLeftRadius: overlay.borderRadius.bottomLeft,
-            borderBottomRightRadius: overlay.borderRadius.bottomRight,
-        })
-    }
-
-    return element
-}
-
-function style(element: HTMLDivElement, styles: Partial<HTMLElement['style']>): void {
-    for (let [name, value] of Object.entries(styles)) {
-        element.style[name] = value
     }
 }

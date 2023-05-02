@@ -141,7 +141,7 @@ export function parseComponentTree(
   for (const tag of iterateComponentsTags(rootElem)) {
     if (tag.type === 'START') {
       const component: BladeComponentTreeNode = {
-        label: window.__BDT_CONTEXT[tag.id].tag,
+        label: window.__BLADE_DEVTOOLS_COMPONENT_DATA[tag.id]?.tag,
         nodes: [tag.node],
         id: tag.id,
         children: [],

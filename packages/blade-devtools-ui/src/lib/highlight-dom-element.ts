@@ -9,12 +9,6 @@ export interface Overlay {
         height: number
         width: number
     }
-    borderRadius?: {
-        topLeft: string
-        topRight: string
-        bottomLeft: string
-        bottomRight: string
-    }
 }
 
 interface ComponentHighlighting {
@@ -72,23 +66,7 @@ interface Bounds {
 
 /** @internal */
 export function computeOverlay(nodes: Node[]): Overlay|null {
-    const bounds = computeBounds(nodes)
-    const overlay = toOverlay(bounds)
-
-    // Looks way better for single elements with a border radius, since the
-    // overlay does not generate "sharp" edges
-    const elements = nodes.filter((node): node is HTMLElement => node instanceof HTMLElement)
-    if (overlay && elements.length === 1) {
-        const style = getComputedStyle(elements[0])
-        overlay.borderRadius = {
-            topLeft: style.borderTopLeftRadius,
-            topRight: style.borderTopRightRadius,
-            bottomLeft: style.borderBottomLeftRadius,
-            bottomRight: style.borderBottomRightRadius,
-        }
-    }
-
-    return overlay
+    return toOverlay(computeBounds(nodes))
 }
 
 /** @internal */
@@ -101,8 +79,7 @@ export function computeBounds(nodes: Node[]): Bounds {
     }
 
     for (let element of nodes) {
-        if (!(element instanceof HTMLElement)) continue
-
+        if (typeof element.getBoundingClientRect !== 'function') continue
         const rect = element.getBoundingClientRect()
 
         bounds.top = Math.min(bounds.top, rect.top)

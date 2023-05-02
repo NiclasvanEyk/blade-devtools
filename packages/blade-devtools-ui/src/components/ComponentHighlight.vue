@@ -49,12 +49,14 @@ const overlayStyle = computed(() => {
 
 <style scoped>
 .highlight {
+    --very-large-z-index: 999999998;
     --border-width: 1px;
     --border: var(--border-width) dashed var(--primary-500);
 }
 
 .line {
     position: fixed;
+    z-index: var(--very-large-z-index);
 }
 
 .top {
@@ -80,7 +82,7 @@ const overlayStyle = computed(() => {
 
 .element {
     position: fixed;
-    z-index: 999999998;
+    z-index: var(--very-large-z-index);
     background: var(--primary-500);
     opacity: 0.3;
 

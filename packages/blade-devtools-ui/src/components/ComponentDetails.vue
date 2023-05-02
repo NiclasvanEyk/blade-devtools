@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { BladeComponentViewTreeNode } from '@/lib/tree-view'
-import { computed } from 'vue'
+import type {BladeComponentViewTreeNode} from '@/lib/tree-view'
+import {computed} from 'vue'
 import Array from '@/components/data-types/Array.vue'
 
 const props = defineProps<{
@@ -10,10 +10,7 @@ const props = defineProps<{
 const data = computed(() => {
   if (!props.selectedComponent) return {}
 
-  const ret = window.__BLADE_DEVTOOLS_COMPONENT_DATA[props.selectedComponent.id];
-    console.log(ret);
-
-    return ret;
+  return window.__BLADE_DEVTOOLS_COMPONENT_DATA[props.selectedComponent.id];
 })
 </script>
 

@@ -68,10 +68,9 @@ function selectPreviousSibling() {
 
 function scrollIntoView() {
     const firstElement = props.component.nodes.find((e) => typeof e.scrollIntoView === 'function')
-    console.log(props.component.nodes, firstElement)
     if (!firstElement) return
 
-    firstElement.scrollIntoView({ block: 'start' })
+    firstElement.scrollIntoView({ block: 'center' })
     setTimeout(() => {
         highlighter.highlight(props.component.nodes)
     }, 50)

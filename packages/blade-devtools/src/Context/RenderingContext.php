@@ -47,32 +47,4 @@ class RenderingContext
             $this->currentComponentContext = null;
         }
     }
-
-    public function serialize(): string
-    {
-        // The data of each component should be serialized to a JSON-string.
-        // The devtools UI can then interpret/consume said string.
-
-        $components = [];
-        foreach ($this->components as $context) {
-            $components[$context->id] = [
-                'id' => $context->id,
-                'data' => (new ComponentDataSerializer())->serialize($context->data),
-                'tag' => $context->tag,
-                'view' => $context->view,
-                'file' => $context->file,
-            ];
-        }
-
-        return json_encode($components);
-    }
-
-    public function serializeToScriptTag(): string
-    {
-        return '<script id="blade-devtools-component-data">'
-            . 'window.__BLADE_DEVTOOLS_COMPONENT_DATA = JSON.parse('
-                . json_encode($this->serialize())
-            . ');'
-            . '</script>';
-    }
 }

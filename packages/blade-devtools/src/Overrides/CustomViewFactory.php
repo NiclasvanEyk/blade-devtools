@@ -8,6 +8,7 @@ use Illuminate\View\Factory;
 use Illuminate\View\View;
 use Illuminate\Contracts\View\View as ViewContract;
 use NiclasvanEyk\BladeDevtools\Adapter\ViewFactoryDevtools;
+use NiclasvanEyk\BladeDevtools\Paths\RemotePath;
 
 class CustomViewFactory extends Factory
 {
@@ -65,7 +66,7 @@ class CustomViewFactory extends Factory
             if ($view instanceof \Illuminate\View\View) {
                 $content .= $view->with($data)->render();
                 $context = $this->devtools()->renderingContext()->currentComponentContext();
-                $context->file = $view->getPath();
+                $context->file = new RemotePath($view->getPath());
                 $name = $view->getName();
             } elseif ($view instanceof Htmlable) {
                 $content .= $view->toHtml();
@@ -74,7 +75,7 @@ class CustomViewFactory extends Factory
                 /** @var View */
                 $v = $this->make($view, $data);
                 $context = $this->devtools()->renderingContext()->currentComponentContext();
-                $context->file = $v->getPath();
+                $context->file = new RemotePath($v->getPath());
                 $content .= $v->render();
                 $name = $v->getName();
             }

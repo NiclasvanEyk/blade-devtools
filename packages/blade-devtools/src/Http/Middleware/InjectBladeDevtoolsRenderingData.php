@@ -5,6 +5,7 @@ namespace NiclasvanEyk\BladeDevtools\Http\Middleware;
 use Closure;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
+use NiclasvanEyk\BladeDevtools\Context\ContextSerializer;
 use NiclasvanEyk\BladeDevtools\Context\RenderingContext;
 use NiclasvanEyk\BladeDevtools\Context\RenderingContextManager;
 use function strripos;
@@ -13,7 +14,8 @@ use function substr;
 class InjectBladeDevtoolsRenderingData
 {
     public function __construct(
-        private readonly RenderingContextManager $renderingContext
+        private readonly RenderingContextManager $renderingContext,
+        private readonly ContextSerializer $serializer,
     ) {
     }
 
@@ -42,7 +44,7 @@ class InjectBladeDevtoolsRenderingData
     private function inject(RenderingContext $context, Response $response): void
     {
         $content = $response->getContent();
-        $serializedContext = $context->serializeToScriptTag();
+        $serializedContext = $this->serializer->toScriptTag($context);
         $pos = strripos($content, '</body>');
         $content = substr($content, 0, $pos) . $serializedContext . substr($content, $pos);
 

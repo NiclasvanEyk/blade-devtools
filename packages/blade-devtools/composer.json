@@ -7,6 +7,11 @@
       "NiclasvanEyk\\BladeDevtools\\": "src/"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "NiclasvanEyk\\BladeDevtools\\Tests\\": "tests/"
+    }
+  },
   "authors": [
     {
       "name": "Niclas van Eyk",
@@ -21,7 +26,9 @@
     "symfony/var-exporter": "^6.2"
   },
   "require-dev": {
-    "laravel/pint": "^1.8"
+    "laravel/pint": "^1.8",
+    "phpunit/phpunit": "^10.1",
+    "symfony/var-dumper": "^6.2"
   },
   "extra": {
     "laravel": {

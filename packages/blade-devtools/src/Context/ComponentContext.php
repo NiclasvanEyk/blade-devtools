@@ -2,6 +2,7 @@
 
 namespace NiclasvanEyk\BladeDevtools\Context;
 
+use NiclasvanEyk\BladeDevtools\Paths\RemotePath;
 use Ramsey\Uuid\Uuid;
 
 /**
@@ -18,7 +19,7 @@ class ComponentContext
         public string $tag = "unknown",
         public string $view = "unknown",
         public string $class = "unknown",
-        public string $file = "unknown",
+        public ?RemotePath $file = null,
     ) {
         $this->id = $id ?? (string) Uuid::uuid4();
     }

@@ -23,14 +23,6 @@ const overlayStyle = computed(() => {
         height: `${props.overlay.dimensions.height}px`,
     }
 
-    const radius = props.overlay.borderRadius
-    if (radius) {
-        style.borderTopRightRadius = `${radius.topRight}px`;
-        style.borderTopLeftRadius = `${radius.topLeft}px`;
-        style.borderBottomRightRadius = `${radius.bottomRight}px`;
-        style.borderBottomLeftRadius = `${radius.bottomLeft}px`;
-    }
-
     return style
 })
 </script>

@@ -44,6 +44,29 @@ class Livewire implements Integration
         $almostLastLine = $lines[count($lines) - 2];
         $lastLine = $lines[count($lines) - 1];
 
+        // Livewire adds an "end comment" to identify if you violated it's
+        // restriction of having a _single_ root node per component:
+        //     <div wire:id="my-id"></div>
+        //     <-- Livewire component end my-id -->
+        // When there is anything between the node with wire-id and it's end
+        // comment, Livewire logs a warning to the console, since re-rendering
+        // is likely to lead to errors.
+        //
+        // Since Blade Devtools adds comments arround views, this is violated
+        // by default:
+        //     <div wire:id="1234567"></div>
+        // becomes
+        //     <-- BLADE_COMPONENT_START[abc-xyz] -->
+        //     <div wire:id="1234567"></div>
+        //     <-- BLADE_COMPONENT_END[abc-xyz] -->
+        // and after Livewires tracking logic injects the end comment:
+        //     <-- BLADE_COMPONENT_START[abc-xyz] -->
+        //     <div wire:id="1234567"></div>
+        //     <-- BLADE_COMPONENT_END[abc-xyz] -->
+        //     <-- Livewire component end 1234567 -->
+        // As you can see, the BLADE_COMPONENT_END comment violates Livewire's
+        // restriction. To resolve this issue, we simply swap the last two
+        // lines, since the devtools do not care about comments anyway.
         if ($this->isDevtoolsComment($almostLastLine) && $this->isLivewireComment($lastLine)) {
             $lines[count($lines) - 2] = $lastLine;
             $lines[count($lines) - 1] = $almostLastLine;

@@ -5,7 +5,7 @@ import DevtoolsToggle from '@/components/DevtoolsToggle.vue'
 import { ref } from 'vue'
 import Theme from "@/components/Theme.vue";
 import {
-    Overlay,
+    type Overlay,
     provideComponentHighlighting
 } from "@/lib/highlight-dom-element";
 import ComponentHighlight from "@/components/ComponentHighlight.vue";

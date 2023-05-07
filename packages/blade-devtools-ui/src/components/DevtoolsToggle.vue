@@ -34,7 +34,7 @@ const toggle = () => emit('update:modelValue', !props.modelValue)
   width: fit-content;
 
   position: fixed;
-  top: 0;
+  top: 50%;
   right: 0;
 
   border: 1px solid transparent;

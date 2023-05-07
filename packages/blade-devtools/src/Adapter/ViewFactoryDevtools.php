@@ -13,12 +13,14 @@ use NiclasvanEyk\BladeDevtools\Context\RenderingContextManager;
  */
 class ViewFactoryDevtools
 {
+    public function __construct(
+        private readonly RenderingContextManager $manager,
+    ) {
+    }
+
     public function renderingContext(): RenderingContext
     {
-        /** @var RenderingContextManager $manager */
-        $manager = resolve(RenderingContextManager::class);
-
-        return $manager->currentOrNew();
+        return $this->manager->currentOrNew();
     }
 
     public function setCurrentComponent(Component $component): void
@@ -26,6 +28,7 @@ class ViewFactoryDevtools
         $context = $this->renderingContext()->createComponentContext();
         $context->tag = $component->componentName;
         $context->data = Arr::except($component->data(), 'attributes');
+        ksort($context->data);
         $context->class = $component::class;
     }
 

@@ -73,8 +73,6 @@ class Livewire implements Integration
 
             $repaired = implode("\n", $lines);
 
-            \Log::info('Repaired response: '.$repaired);
-
             data_set($response, 'effects.html', $repaired);
         }
     }

@@ -2,6 +2,9 @@
 
 An attempt to build something like [Vue's Devtools](https://devtools.vuejs.org/) or the [React Developer Tools](https://react.dev/learn/react-developer-tools) for the Blade templating engine.
 
+![Screenshot of a development version of Blade Devtools showing various elements used in Filament](https://github.com/NiclasvanEyk/blade-devtools/assets/10284694/97b7578b-58f8-4fa9-a618-adb058347efc)
+
+
 ## Installation
 
 This is still in development, there is no package you could readily install.
